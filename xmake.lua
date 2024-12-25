@@ -29,6 +29,13 @@ option("ascend-npu")
     add_defines("ENABLE_ASCEND_NPU")
 option_end()
 
+option("metax-gpu")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Enable or disable Metax GPU functions")
+    add_defines("ENABLE_METAX_GPU")
+option_end()
+
 option("ccl")
     set_default(true)
     set_showmenu(true)
@@ -121,6 +128,28 @@ if has_config("ascend-npu") then
     target_end()
 end
 
+if has_config("metax-gpu") then
+    add_defines("ENABLE_METAX_GPU")
+    local MACA_ROOT = os.getenv("MACA_PATH") or os.getenv("MACA_HOME") or os.getenv("MACA_ROOT")
+
+    add_includedirs(MACA_ROOT .. "/include")
+    add_linkdirs(MACA_ROOT .. "/lib")
+    add_links("libhcruntime.so")
+
+    target("metax-gpu")
+        set_kind("static")
+        set_languages("cxx17")
+        on_install(function (target) end)
+
+        add_files("src/runtime/maca/*.cc")
+        if has_config("ccl") then
+            add_links("libhccl.so")
+            add_files("src/ccl/maca/*.cc")
+        end
+        add_cxflags("-lstdc++ -Wall -Werror -fPIC")
+    target_end()
+end
+
 target("infinirt")
     set_kind("shared")
 
@@ -130,7 +159,9 @@ target("infinirt")
     if has_config("ascend-npu") then
         add_deps("ascend-npu")
     end
-
+    if has_config("metax-gpu") then
+        add_deps("metax-gpu")
+    end
     set_languages("cxx17")
     add_files("src/runtime/runtime.cc")
 
@@ -147,6 +178,9 @@ target("infiniccl")
     end
     if has_config("ascend-npu") then
         add_deps("ascend-npu")
+    end
+    if has_config("metax-gpu") then
+        add_deps("metax-gpu")
     end
     set_languages("cxx17")
     add_files("src/ccl/infiniccl.cc")
@@ -183,6 +217,9 @@ target("infini_infer_test")
     end
     if has_config("ascend-npu") then
         add_deps("ascend-npu")
+    end
+    if has_config("metax-gpu") then
+        add_deps("metax-gpu")
     end
     add_cxflags("-g", "-O0")
     add_ldflags("-g")
