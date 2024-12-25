@@ -25,6 +25,7 @@ class DeviceType(ctypes.c_int):
     DEVICE_TYPE_CUDA = 1
     DEVICE_TYPE_CAMBRICON = 2
     DEVICE_TYPE_ASCEND = 3
+    DEVICE_TYPE_METAX = 4
 
 class LlamaMeta(ctypes.Structure):
     _fields_ = [
