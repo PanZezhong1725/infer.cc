@@ -1,5 +1,5 @@
 import ctypes
-from ctypes import c_void_p, c_uint, POINTER
+from ctypes import c_void_p, c_uint, c_float, POINTER
 import sys
 from libinfer import open_library, DataType, DeviceType, LlamaWeights, LlamaMeta, KVCache
 import torch
@@ -208,7 +208,7 @@ class LlamaModel():
 
 def test():
     if len(sys.argv) < 3:
-        print("Usage: python test_llama.py [--cpu | --cuda | --cambricon | --ascend] <path/to/model_dir> [n_device]")
+        print("Usage: python test_llama.py [--cpu | --cuda | --cambricon | --ascend | --maca] <path/to/model_dir> [n_device]")
         sys.exit(1)
     model_path =  sys.argv[2]
     device_type = DeviceType.DEVICE_TYPE_CPU
@@ -220,8 +220,10 @@ def test():
         device_type = DeviceType.DEVICE_TYPE_CAMBRICON
     elif sys.argv[1] == "--ascend":
         device_type = DeviceType.DEVICE_TYPE_ASCEND
+    elif sys.argv[1] == "--maca":
+        device_type = DeviceType.DEVICE_TYPE_METAX
     else:
-        print("Usage: python test_llama.py [--cpu | --cuda | --cambricon | --ascend] <path/to/model_dir> [n_device]")
+        print("Usage: python test_llama.py [--cpu | --cuda | --cambricon | --ascend | --maca] <path/to/model_dir> [n_device]")
         sys.exit(1)
     
     ndev = int(sys.argv[3]) if len(sys.argv) > 3 else 1

@@ -445,7 +445,7 @@ class CPM9GModel():
 
 def test():
     if len(sys.argv) < 3:
-        print("Usage: python test_9G.py [--cpu | --cuda | --cambricon | --ascend] <path/to/model_dir> [n_device]")
+        print("Usage: python test_9G.py [--cpu | --cuda | --cambricon | --ascend | --maca] <path/to/model_dir> [n_device]")
         sys.exit(1)
     model_path =  sys.argv[2]
     device_type = DeviceType.DEVICE_TYPE_CPU
@@ -458,7 +458,7 @@ def test():
     elif sys.argv[1] == "--ascend":
         device_type = DeviceType.DEVICE_TYPE_ASCEND
     else:
-        print("Usage: python test_9G.py [--cpu | --cuda | --cambricon | --ascend] <path/to/model_dir> [n_device]")
+        print("Usage: python test_9G.py [--cpu | --cuda | --cambricon | --ascend | --maca] <path/to/model_dir> [n_device]")
         sys.exit(1)
     
     ndev = int(sys.argv[3]) if len(sys.argv) > 3 else 1
