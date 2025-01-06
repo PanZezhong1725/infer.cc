@@ -2,6 +2,7 @@
 #include "../runtime/runtime.h"
 #include "./ascend/infiniccl_ascend.h"
 #include "./cuda/infiniccl_cuda.h"
+#include "./cpu/infiniccl_cpu.h"
 
 __C infinicclStatus_t infinicclCommInitAll(DeviceType deviceType,
                                            infinicclComm_t *comms,
@@ -11,6 +12,8 @@ __C infinicclStatus_t infinicclCommInitAll(DeviceType deviceType,
         return infinicclCudaCommInitAll(comms, numDevices, deviceIDs);
     case DEVICE_ASCEND:
         return infinicclAscendCommInitAll(comms, numDevices, deviceIDs);
+    case DEVICE_CPU:
+        return infinicclCpuCommInitAll(comms);
     default:
         return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -25,6 +28,8 @@ __C infinicclStatus_t infinicclCommDestroy(infinicclComm_t comm) {
         return infinicclCudaCommDestroy(comm);
     case DEVICE_ASCEND:
         return infinicclAscendCommDestroy(comm);
+    case DEVICE_CPU:
+        return infinicclCpuCommDestroy(comm);
     default:
         return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -47,6 +52,9 @@ __C infinicclStatus_t infinicclAllReduceSum(infinicclComm_t comm, void *sendbuf,
     case DEVICE_ASCEND:
         return infinicclAscendAllReduceSum(comm, sendbuf, recvbuf, count,
                                            datatype, stream);
+    case DEVICE_CPU:
+        return infinicclCpuAllReduceSum(comm, sendbuf, recvbuf, count,
+                                           datatype);
     default:
         return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED;
     }
