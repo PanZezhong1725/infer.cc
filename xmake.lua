@@ -8,6 +8,13 @@ option("omp")
     set_description("Enable or disable OpenMP support")
 option_end()
 
+option("cpu")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Enable or disable CPU functions")
+    add_defines("ENABLE_CPU")
+option_end()
+
 option("nv-gpu")
     set_default(false)
     set_showmenu(true)
@@ -50,6 +57,26 @@ local infini_root = os.getenv("INFINI_ROOT") or os.getenv(is_host("windows") and
 
 if has_config("infer") then
     add_includedirs(infini_root .. "/include")
+end
+
+if has_config("cpu") then
+    add_defines("ENABLE_CPU")
+    target("cpu")
+        set_kind("static")
+        if not is_plat("windows") then
+            add_cxflags("-fPIC")
+        end
+        set_languages("cxx17")
+        add_cxflags("-fopenmp")
+        add_ldflags("-fopenmp")
+        if has_config("ccl") then
+            add_includedirs("$(env MPI_HOME)/include")
+            add_linkdirs("$(env MPI_HOME)/lib")
+            add_packages("mpi")
+            add_links("mpi")
+            add_files("src/ccl/cpu/*.cc")
+        end
+    target_end()
 end
 
 if has_config("nv-gpu") then
@@ -142,6 +169,9 @@ if has_config("ccl") then
 target("infiniccl")
     set_kind("shared")
     add_deps("infinirt")
+    if has_config("cpu") then
+        add_deps("cpu")
+    end
     if has_config("nv-gpu") then
         add_deps("nv-gpu")
     end
@@ -178,6 +208,9 @@ target("infini_infer_test")
     set_languages("cxx17")
     on_install(function (target) end)
     add_includedirs("src")
+    if has_config("cpu") then
+        add_deps("cpu")
+    end
     if has_config("nv-gpu") then
         add_deps("nv-gpu")
     end
