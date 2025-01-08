@@ -121,19 +121,36 @@ if has_config("ascend-npu") then
     target_end()
 end
 
+if has_config("cambricon-mlu") then
+    add_defines("ENABLE_CAMBRICON_MLU")
+    add_includedirs("/usr/local/neuware/include")
+    add_linkdirs("/usr/local/neuware/lib64")
+    add_linkdirs("/usr/local/neuware/lib")
+    add_links("libcnrt.so")
+    add_links("libcnpapi.so")
+
+    target("cambricon-mlu")
+        set_kind("static")
+        on_install(function (target) end)
+        set_languages("cxx17")
+        add_files("src/runtime/cambricon/*.cc")
+        add_cxflags("-lstdc++ -Wall -Werror -fPIC")
+    target_end()
+end
+
 target("infinirt")
     set_kind("shared")
-
     if has_config("nv-gpu") then
         add_deps("nv-gpu")
     end
     if has_config("ascend-npu") then
         add_deps("ascend-npu")
     end
-
+    if has_config("cambricon-mlu") then
+        add_deps("cambricon-mlu")
+    end
     set_languages("cxx17")
     add_files("src/runtime/runtime.cc")
-
     set_installdir(infini_root)
     add_installfiles("include/infinirt.h", {prefixdir = "include"})
 target_end()
@@ -148,9 +165,11 @@ target("infiniccl")
     if has_config("ascend-npu") then
         add_deps("ascend-npu")
     end
+    if has_config("cambricon-mlu") then
+        add_deps("cambricon-mlu")
+    end
     set_languages("cxx17")
     add_files("src/ccl/infiniccl.cc")
-
     set_installdir(infini_root)
     add_installfiles("include/infiniccl.h", {prefixdir = "include"})
 target_end()
@@ -178,11 +197,15 @@ target("infini_infer_test")
     set_languages("cxx17")
     on_install(function (target) end)
     add_includedirs("src")
+    add_links("pthread")
     if has_config("nv-gpu") then
         add_deps("nv-gpu")
     end
     if has_config("ascend-npu") then
         add_deps("ascend-npu")
+    end
+    if has_config("cambricon-mlu") then
+        add_deps("cambricon-mlu")
     end
     add_cxflags("-g", "-O0")
     add_ldflags("-g")

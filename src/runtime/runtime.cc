@@ -1,6 +1,7 @@
 #include "runtime.h"
 #include "ascend/infinirt_ascend.h"
 #include "cuda/infinirt_cuda.h"
+#include "cambricon/infinirt_cambricon.h"
 #include <cstdlib>
 #include <string.h>
 
@@ -9,6 +10,8 @@ __C __export infinirtStatus_t infinirtInit(DeviceType device){
         case DEVICE_CPU:
             return INFINIRT_STATUS_SUCCESS;
         case DEVICE_NVIDIA:
+            return INFINIRT_STATUS_SUCCESS;
+        case DEVICE_CAMBRICON:
             return INFINIRT_STATUS_SUCCESS;
         case DEVICE_ASCEND:
             return initAscend();
@@ -25,6 +28,8 @@ __C infinirtStatus_t infinirtDeviceSynchronize(DeviceType device, uint32_t devic
         return INFINIRT_STATUS_SUCCESS;
     case DEVICE_NVIDIA:
         return synchronizeCudaDevice(deviceId);
+    case DEVICE_CAMBRICON:
+        return synchronizeCambriconDevice(deviceId);
     case DEVICE_ASCEND:
         return synchronizeAscendDevice(deviceId);
     default:
@@ -49,6 +54,8 @@ __C infinirtStatus_t infinirtStreamCreate(infinirtStream_t *pStream, DeviceType 
         
     case DEVICE_NVIDIA:
         return createCudaStream(pStream, deviceId);
+    case DEVICE_CAMBRICON:
+        return createCambriconStream(pStream, deviceId);
     case DEVICE_ASCEND:
         return createAscendStream(pStream, deviceId);
     default:
@@ -66,6 +73,8 @@ __C infinirtStatus_t infinirtStreamDestroy(infinirtStream_t stream)
         return INFINIRT_STATUS_SUCCESS;
     case DEVICE_NVIDIA:
         return destoryCudaStream(stream);
+    case DEVICE_CAMBRICON:
+        return destoryCambriconStream(stream);
     case DEVICE_ASCEND:
         return destoryAscendStream(stream);
     default:
@@ -82,6 +91,8 @@ __C infinirtStatus_t infinirtStreamSynchronize(infinirtStream_t stream){
         return INFINIRT_STATUS_SUCCESS;
     case DEVICE_NVIDIA:
         return synchronizeCudaStream(stream);
+    case DEVICE_CAMBRICON:
+        return synchronizeCambriconStream(stream);
     case DEVICE_ASCEND:
         return synchronizeAscendStream(stream);
     default:
@@ -127,6 +138,8 @@ __C infinirtStatus_t infinirtEventCreate(infinirtEvent_t *pEvent, DeviceType dev
         
     case DEVICE_NVIDIA:
         return createCudaEvent(pEvent, deviceId);
+    case DEVICE_CAMBRICON:
+        return createCambriconEvent(pEvent, deviceId);
     case DEVICE_ASCEND:
         return createAscendEvent(pEvent, deviceId);
     default:
@@ -144,6 +157,8 @@ __C infinirtStatus_t infinirtEventRecord(infinirtEvent_t event,
         return INFINIRT_STATUS_SUCCESS;
     case DEVICE_NVIDIA:
         return recordCudaEvent(event, stream);
+    case DEVICE_CAMBRICON:
+        return recordCambriconEvent(event, stream);
     case DEVICE_ASCEND:
         return recordAscendEvent(event, stream);
     default:
@@ -158,6 +173,8 @@ __C infinirtStatus_t infinirtEventQuery(infinirtEvent_t event) {
         return INFINIRT_STATUS_SUCCESS;
     case DEVICE_NVIDIA:
         return queryCudaEvent(event);
+    case DEVICE_CAMBRICON:
+        return queryCambriconEvent(event);
     case DEVICE_ASCEND:
         return queryAscendEvent(event);
     default:
@@ -172,6 +189,8 @@ __C infinirtStatus_t infinirtEventSynchronize(infinirtEvent_t event) {
         return INFINIRT_STATUS_SUCCESS;
     case DEVICE_NVIDIA:
         return synchronizeCudaEvent(event);
+    case DEVICE_CAMBRICON:
+        return synchronizeCambriconEvent(event);
     case DEVICE_ASCEND:
         return synchronizeAscendEvent(event);
     default:
@@ -189,6 +208,8 @@ __C infinirtStatus_t infinirtEventDestroy(infinirtEvent_t event)
         return INFINIRT_STATUS_SUCCESS;
     case DEVICE_NVIDIA:
         return destoryCudaEvent(event);
+    case DEVICE_CAMBRICON:
+        return destoryCambriconEvent(event);
     case DEVICE_ASCEND:
         return destoryAscendEvent(event);
     default:
@@ -208,6 +229,8 @@ __C infinirtStatus_t infinirtStreamWaitEvent(infinirtEvent_t event, infinirtStre
         return INFINIRT_STATUS_SUCCESS;
     case DEVICE_NVIDIA:
         return waitCudaEvent(event, stream);
+    case DEVICE_CAMBRICON:
+        return waitCambriconEvent(event, stream);
     case DEVICE_ASCEND:
         return waitAscendEvent(event, stream);
     default:
@@ -225,6 +248,8 @@ __C infinirtStatus_t infinirtMalloc(void **pMemory, DeviceType device,
         return INFINIRT_STATUS_SUCCESS;
     case DEVICE_NVIDIA:
         return mallocCuda(pMemory, deviceId, size);
+    case DEVICE_CAMBRICON:
+        return mallocCambricon(pMemory, deviceId, size);
     case DEVICE_ASCEND:
         return mallocAscend(pMemory, deviceId, size);
     default:
@@ -244,6 +269,8 @@ __C infinirtStatus_t infinirtMallocAsync(void **pMemory, DeviceType device,
         return infinirtMalloc(pMemory, device, deviceId, size);
     case DEVICE_NVIDIA:
         return mallocCudaAsync(pMemory, deviceId, size, stream);
+    case DEVICE_CAMBRICON:
+        return mallocCambriconAsync(pMemory, deviceId, size, stream);
     case DEVICE_ASCEND:
         return mallocAscendAsync(pMemory, deviceId, size, stream);
     default:
@@ -260,6 +287,8 @@ __C __export infinirtStatus_t infinirtMallocHost(void **pMemory,
         return infinirtMalloc(pMemory, device, deviceId, size);
     case DEVICE_NVIDIA:
         return mallocHostCuda(pMemory, deviceId, size);
+    case DEVICE_CAMBRICON:
+        return mallocHostCambricon(pMemory, deviceId, size);
     case DEVICE_ASCEND:
         return mallocHostAscend(pMemory, deviceId, size);
     default:
@@ -277,6 +306,8 @@ __C infinirtStatus_t infinirtFree(void *ptr, DeviceType device,
         return INFINIRT_STATUS_SUCCESS;
     case DEVICE_NVIDIA:
         return freeCuda(ptr, deviceId);
+    case DEVICE_CAMBRICON:
+        return freeCambricon(ptr, deviceId);
     case DEVICE_ASCEND:
         return freeAscend(ptr, deviceId);
     default:
@@ -299,6 +330,8 @@ __C infinirtStatus_t infinirtFreeAsync(void *ptr, DeviceType device,
         return infinirtFree(ptr, device, deviceId);
     case DEVICE_NVIDIA:
         return freeCudaAsync(ptr, deviceId, stream);
+    case DEVICE_CAMBRICON:
+        return freeCambriconAsync(ptr, deviceId, stream);
     case DEVICE_ASCEND:
         return freeAscendAsync(ptr, deviceId, stream);
     default:
@@ -315,6 +348,8 @@ __C __export infinirtStatus_t infinirtFreeHost(void *ptr, DeviceType device,
         return infinirtFree(ptr, device, deviceId);
     case DEVICE_NVIDIA:
         return freeHostCuda(ptr, deviceId);
+    case DEVICE_CAMBRICON:
+        return freeHostCambricon(ptr, deviceId);
     case DEVICE_ASCEND:
         return freeHostAscend(ptr, deviceId);
     default:
@@ -334,6 +369,8 @@ __C infinirtStatus_t infinirtMemcpyH2D(void *dst, DeviceType device,
         return INFINIRT_STATUS_SUCCESS;
     case DEVICE_NVIDIA:
         return memcpyHost2Cuda(dst, deviceId, src, size);
+    case DEVICE_CAMBRICON:
+        return memcpyHost2Cambricon(dst, deviceId, src, size);
     case DEVICE_ASCEND:
         return memcpyHost2Ascend(dst, deviceId, src, size);
     default:
@@ -356,6 +393,8 @@ __C infinirtStatus_t infinirtMemcpyH2DAsync(void *dst, DeviceType device,
         return infinirtMemcpyH2D(dst, device, deviceId, src, size);
     case DEVICE_NVIDIA:
         return memcpyHost2CudaAsync(dst, deviceId, src, size, stream);
+    case DEVICE_CAMBRICON:
+        return memcpyHost2CambriconAsync(dst, deviceId, src, size, stream);
     case DEVICE_ASCEND:
         return memcpyHost2AscendAsync(dst, deviceId, src, size, stream);
     default:
@@ -375,6 +414,8 @@ __C infinirtStatus_t infinirtMemcpyD2H(void *dst, const void *src,
         return INFINIRT_STATUS_SUCCESS;
     case DEVICE_NVIDIA:
         return memcpyCuda2Host(dst, src, deviceId, size);
+    case DEVICE_CAMBRICON:
+        return memcpyCambricon2Host(dst, src, deviceId, size);
     case DEVICE_ASCEND:
         return memcpyAscend2Host(dst, src, deviceId, size);
     default:
@@ -395,6 +436,8 @@ __C __export infinirtStatus_t infinirtMemcpy(void *dst, const void *src,
         return INFINIRT_STATUS_SUCCESS;
     case DEVICE_NVIDIA:
         return memcpyCuda(dst, src, deviceId, size);
+    case DEVICE_CAMBRICON:
+        return memcpyCambricon(dst, src, deviceId, size);
     case DEVICE_ASCEND:
         return memcpyAscend(dst, src, deviceId, size);
     default:
@@ -420,6 +463,8 @@ __C __export infinirtStatus_t infinirtMemcpyAsync(void *dst, const void *src,
         return infinirtMemcpy(dst, src, device, deviceId, size);
     case DEVICE_NVIDIA:
         return memcpyCudaAsync(dst, src, deviceId, size, stream);
+    case DEVICE_CAMBRICON:
+        return memcpyCambriconAsync(dst, src, deviceId, size, stream);
     case DEVICE_ASCEND:
         return memcpyAscendAsync(dst, src, deviceId, size, stream);
     default:
