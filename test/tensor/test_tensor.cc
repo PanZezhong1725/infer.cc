@@ -41,6 +41,7 @@ int test_tensor_buffer(DeviceType deviceType) {
     CHECK_RUN(infinirtMemcpyAsync(tensor2->data(stream_compute),
                                   tensor1->data(stream_compute), deviceType, 0,
                                   tensor1->byte_size(), stream_compute));
+    CHECK_RUN(infinirtStreamSynchronize(stream_compute));
     CHECK_RUN(infinirtMemcpyD2H(result.data(), tensor2->data(), deviceType, 0,
                                 tensor2->byte_size()));
 

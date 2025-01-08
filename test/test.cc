@@ -14,4 +14,8 @@ int main() {
     printf("Test CCL functions: Ascend\n");
     test_ccl(DEVICE_ASCEND);
 #endif
+#ifdef ENABLE_CAMBRICON_MLU
+    printf("Test tensor functions: Cambricon\n");
+    test_tensor(DEVICE_CAMBRICON);
+#endif
 }
