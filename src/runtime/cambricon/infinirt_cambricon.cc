@@ -23,6 +23,9 @@
     } while (0)
 
 inline cnrtQueue_t getCnrtQueue(infinirtStream_t stream){
+    if (stream == nullptr){
+        return (cnrtQueue_t)(0);
+    }
     return (cnrtQueue_t)(stream->stream);
 }
 

@@ -134,6 +134,10 @@ if has_config("cambricon-mlu") then
         on_install(function (target) end)
         set_languages("cxx17")
         add_files("src/runtime/cambricon/*.cc")
+        if has_config("ccl") then
+            add_links("libcncl.so")
+            add_files("src/ccl/cambricon/*cc")
+        end
         add_cxflags("-lstdc++ -Wall -Werror -fPIC")
     target_end()
 end
