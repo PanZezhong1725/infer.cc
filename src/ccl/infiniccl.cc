@@ -2,15 +2,19 @@
 #include "../runtime/runtime.h"
 #include "./ascend/infiniccl_ascend.h"
 #include "./cuda/infiniccl_cuda.h"
+#include "./kunlun/infiniccl_kunlun.h"
 
 __C infinicclStatus_t infinicclCommInitAll(DeviceType deviceType,
                                            infinicclComm_t *comms,
-                                           unsigned numDevices, unsigned const *deviceIDs) {
+                                           unsigned numDevices,
+                                           unsigned const *deviceIDs) {
     switch (deviceType) {
     case DEVICE_NVIDIA:
         return infinicclCudaCommInitAll(comms, numDevices, deviceIDs);
     case DEVICE_ASCEND:
         return infinicclAscendCommInitAll(comms, numDevices, deviceIDs);
+    case DEVICE_KUNLUN:
+        return infinicclKunlunCommInitAll(comms, numDevices, deviceIDs);
     default:
         return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -25,6 +29,8 @@ __C infinicclStatus_t infinicclCommDestroy(infinicclComm_t comm) {
         return infinicclCudaCommDestroy(comm);
     case DEVICE_ASCEND:
         return infinicclAscendCommDestroy(comm);
+    case DEVICE_KUNLUN:
+        return infinicclKunlunCommDestroy(comm);
     default:
         return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -46,6 +52,9 @@ __C infinicclStatus_t infinicclAllReduceSum(infinicclComm_t comm, void *sendbuf,
                                          datatype, stream);
     case DEVICE_ASCEND:
         return infinicclAscendAllReduceSum(comm, sendbuf, recvbuf, count,
+                                           datatype, stream);
+    case DEVICE_KUNLUN:
+        return infinicclKunlunAllReduceSum(comm, sendbuf, recvbuf, count,
                                            datatype, stream);
     default:
         return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED;
