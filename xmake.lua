@@ -40,6 +40,7 @@ option("ccl")
     set_default(true)
     set_showmenu(true)
     set_description("Enable or disable multi-device communication support")
+    add_defines("ENABLE_CCL")
 option_end()
 
 option("infer")
@@ -191,7 +192,6 @@ target("infinirt")
     add_installfiles("include/infinirt.h", {prefixdir = "include"})
 target_end()
 
-if has_config("ccl") then
 target("infiniccl")
     set_kind("shared")
     add_deps("infinirt")
@@ -212,7 +212,6 @@ target("infiniccl")
     set_installdir(infini_root)
     add_installfiles("include/infiniccl.h", {prefixdir = "include"})
 target_end()
-end
 
 if has_config("infer") then
 target("infiniinfer")

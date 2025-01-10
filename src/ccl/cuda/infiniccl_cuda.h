@@ -2,7 +2,7 @@
 #define INFINICCL_CUDA_H_
 #include "infiniccl.h"
 
-#ifdef ENABLE_NV_GPU
+#if defined(ENABLE_NV_GPU) && defined(ENABLE_CCL)
 #define IMPL_WITH_CUDA ;
 #else
 #define IMPL_WITH_CUDA { return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED; }
