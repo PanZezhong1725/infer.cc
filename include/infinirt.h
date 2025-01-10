@@ -19,10 +19,12 @@
 
 typedef enum
 {
-    DEVICE_CPU,
-    DEVICE_NVIDIA,
-    DEVICE_CAMBRICON,
-    DEVICE_ASCEND,
+    DEVICE_CPU = 0,
+    DEVICE_NVIDIA = 1,
+    DEVICE_CAMBRICON = 2,
+    DEVICE_ASCEND = 3,
+    DEVICE_METAX = 4,
+    DEVICE_MTHREADS = 5,
 } DeviceType;
 
 typedef enum

@@ -3,6 +3,7 @@
 #include "./ascend/infiniccl_ascend.h"
 #include "./cuda/infiniccl_cuda.h"
 #include "./cambricon/infiniccl_cambricon.h"
+#include "./maca/infiniccl_maca.h"
 
 __C infinicclStatus_t infinicclCommInitAll(DeviceType deviceType,
                                            infinicclComm_t *comms,
@@ -14,6 +15,8 @@ __C infinicclStatus_t infinicclCommInitAll(DeviceType deviceType,
         return infinicclCambriconCommInitAll(comms, numDevices, deviceIDs);
     case DEVICE_ASCEND:
         return infinicclAscendCommInitAll(comms, numDevices, deviceIDs);
+    case DEVICE_METAX:
+        return infinicclMacaCommInitAll(comms, numDevices, deviceIDs);
     default:
         return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -30,6 +33,8 @@ __C infinicclStatus_t infinicclCommDestroy(infinicclComm_t comm) {
         return infinicclCambriconCommDestroy(comm);
     case DEVICE_ASCEND:
         return infinicclAscendCommDestroy(comm);
+    case DEVICE_METAX:
+        return infinicclMacaCommDestroy(comm);
     default:
         return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -54,6 +59,9 @@ __C infinicclStatus_t infinicclAllReduceSum(infinicclComm_t comm, void *sendbuf,
                                            datatype, stream);
     case DEVICE_ASCEND:
         return infinicclAscendAllReduceSum(comm, sendbuf, recvbuf, count,
+                                           datatype, stream);
+    case DEVICE_METAX:
+        return infinicclMacaAllReduceSum(comm, sendbuf, recvbuf, count,
                                            datatype, stream);
     default:
         return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED;
