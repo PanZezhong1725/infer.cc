@@ -3,6 +3,7 @@
 #include "cuda/infinirt_cuda.h"
 #include "kunlun/infinirt_kunlun.h"
 #include "cambricon/infinirt_cambricon.h"
+#include "maca/infinirt_maca.h"
 #include <cstdlib>
 #include <string.h>
 
@@ -17,6 +18,8 @@ __C __export infinirtStatus_t infinirtInit(DeviceType device){
         case DEVICE_ASCEND:
             return initAscend();
         case DEVICE_KUNLUN:
+            return INFINIRT_STATUS_SUCCESS;
+        case DEVICE_METAX:
             return INFINIRT_STATUS_SUCCESS;
         default:
             return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
@@ -37,6 +40,8 @@ __C infinirtStatus_t infinirtDeviceSynchronize(DeviceType device, uint32_t devic
         return synchronizeAscendDevice(deviceId);
     case DEVICE_KUNLUN:
         return INFINIRT_STATUS_SUCCESS;
+    case DEVICE_METAX:
+        return synchronizeMacaDevice(deviceId);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -65,6 +70,8 @@ __C infinirtStatus_t infinirtStreamCreate(infinirtStream_t *pStream, DeviceType 
         return createAscendStream(pStream, deviceId);
     case DEVICE_KUNLUN:
         return createKunlunStream(pStream, deviceId);
+    case DEVICE_METAX:
+        return createMacaStream(pStream, deviceId);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -86,6 +93,8 @@ __C infinirtStatus_t infinirtStreamDestroy(infinirtStream_t stream)
         return destoryAscendStream(stream);
     case DEVICE_KUNLUN:
         return destoryKunlunStream(stream);
+    case DEVICE_METAX:
+        return destoryMacaStream(stream);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -106,6 +115,8 @@ __C infinirtStatus_t infinirtStreamSynchronize(infinirtStream_t stream){
         return synchronizeAscendStream(stream);
     case DEVICE_KUNLUN:
         return synchronizeKunlunStream(stream);
+    case DEVICE_METAX:
+        return synchronizeMacaStream(stream);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -155,6 +166,8 @@ __C infinirtStatus_t infinirtEventCreate(infinirtEvent_t *pEvent, DeviceType dev
         return createAscendEvent(pEvent, deviceId);
     case DEVICE_KUNLUN:
         return createKunlunEvent(pEvent, deviceId);
+    case DEVICE_METAX:
+        return createMacaEvent(pEvent, deviceId);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -176,6 +189,8 @@ __C infinirtStatus_t infinirtEventRecord(infinirtEvent_t event,
         return recordAscendEvent(event, stream);
     case DEVICE_KUNLUN:
         return recordKunlunEvent(event, stream);
+    case DEVICE_METAX:
+        return recordMacaEvent(event, stream);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -194,6 +209,8 @@ __C infinirtStatus_t infinirtEventQuery(infinirtEvent_t event) {
         return queryAscendEvent(event);
     case DEVICE_KUNLUN:
         return INFINIRT_STATUS_SUCCESS;
+    case DEVICE_METAX:
+        return queryMacaEvent(event);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -212,6 +229,8 @@ __C infinirtStatus_t infinirtEventSynchronize(infinirtEvent_t event) {
         return synchronizeAscendEvent(event);
     case DEVICE_KUNLUN:
         return synchronizeKunlunEvent(event);
+    case DEVICE_METAX:
+        return synchronizeMacaEvent(event);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -233,6 +252,8 @@ __C infinirtStatus_t infinirtEventDestroy(infinirtEvent_t event)
         return destoryAscendEvent(event);
     case DEVICE_KUNLUN:
         return destoryKunlunEvent(event);
+    case DEVICE_METAX:
+        return destoryMacaEvent(event);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -256,6 +277,8 @@ __C infinirtStatus_t infinirtStreamWaitEvent(infinirtEvent_t event, infinirtStre
         return waitAscendEvent(event, stream);
     case DEVICE_KUNLUN:
         return waitKunlunEvent(event, stream);
+    case DEVICE_METAX:
+        return waitMacaEvent(event, stream);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -277,6 +300,8 @@ __C infinirtStatus_t infinirtMalloc(void **pMemory, DeviceType device,
         return mallocAscend(pMemory, deviceId, size);
     case DEVICE_KUNLUN:
         return mallocKunlun(pMemory, deviceId, size);
+    case DEVICE_METAX:
+        return mallocMaca(pMemory, deviceId, size);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -300,6 +325,8 @@ __C infinirtStatus_t infinirtMallocAsync(void **pMemory, DeviceType device,
         return mallocAscendAsync(pMemory, deviceId, size, stream);
     case DEVICE_KUNLUN:
         return mallocKunlun(pMemory, deviceId, size);
+    case DEVICE_METAX:
+        return mallocMacaAsync(pMemory, deviceId, size, stream);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -320,6 +347,8 @@ __C __export infinirtStatus_t infinirtMallocHost(void **pMemory,
         return mallocHostAscend(pMemory, deviceId, size);
     case DEVICE_KUNLUN:
         return mallocHostKunlun(pMemory, deviceId, size);
+    case DEVICE_METAX:
+        return mallocHostMaca(pMemory, deviceId, size);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -341,6 +370,8 @@ __C infinirtStatus_t infinirtFree(void *ptr, DeviceType device,
         return freeAscend(ptr, deviceId);
     case DEVICE_KUNLUN:
         return freeKunlun(ptr, deviceId);
+    case DEVICE_METAX:
+        return freeMaca(ptr, deviceId);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -367,6 +398,8 @@ __C infinirtStatus_t infinirtFreeAsync(void *ptr, DeviceType device,
         return freeAscendAsync(ptr, deviceId, stream);
     case DEVICE_KUNLUN:
         return freeKunlun(ptr, deviceId);
+    case DEVICE_METAX:
+        return freeMacaAsync(ptr, deviceId, stream);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -387,6 +420,8 @@ __C __export infinirtStatus_t infinirtFreeHost(void *ptr, DeviceType device,
         return freeHostAscend(ptr, deviceId);
     case DEVICE_KUNLUN:
         return freeHostKunlun(ptr, deviceId);
+    case DEVICE_METAX:
+        return freeHostMaca(ptr, deviceId);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -410,6 +445,8 @@ __C infinirtStatus_t infinirtMemcpyH2D(void *dst, DeviceType device,
         return memcpyHost2Ascend(dst, deviceId, src, size);
     case DEVICE_KUNLUN:
         return memcpyHost2Kunlun(dst, deviceId, src, size);
+    case DEVICE_METAX:
+        return memcpyHost2Maca(dst, deviceId, src, size);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -436,6 +473,8 @@ __C infinirtStatus_t infinirtMemcpyH2DAsync(void *dst, DeviceType device,
         return memcpyHost2AscendAsync(dst, deviceId, src, size, stream);
     case DEVICE_KUNLUN:
         return memcpyHost2Kunlun(dst, deviceId, src, size);
+    case DEVICE_METAX:
+        return memcpyHost2MacaAsync(dst, deviceId, src, size, stream);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -459,6 +498,8 @@ __C infinirtStatus_t infinirtMemcpyD2H(void *dst, const void *src,
         return memcpyAscend2Host(dst, src, deviceId, size);
     case DEVICE_KUNLUN:
         return memcpyKunlun2Host(dst, src, deviceId, size);
+    case DEVICE_METAX:
+        return memcpyMaca2Host(dst, src, deviceId, size);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -483,6 +524,8 @@ __C __export infinirtStatus_t infinirtMemcpy(void *dst, const void *src,
         return memcpyAscend(dst, src, deviceId, size);
     case DEVICE_KUNLUN:
         return memcpyKunlun(dst, src, deviceId, size);
+    case DEVICE_METAX:
+        return memcpyMaca(dst, src, deviceId, size);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
@@ -512,6 +555,8 @@ __C __export infinirtStatus_t infinirtMemcpyAsync(void *dst, const void *src,
         return memcpyAscendAsync(dst, src, deviceId, size, stream);
     case DEVICE_KUNLUN:
         return memcpyKunlun(dst, src, deviceId, size);
+    case DEVICE_METAX:
+        return memcpyMacaAsync(dst, src, deviceId, size, stream);
     default:
         return INFINIRT_STATUS_DEVICE_NOT_SUPPORTED;
     }
