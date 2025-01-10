@@ -25,7 +25,7 @@ typedef enum
     DEVICE_ASCEND = 3,
     DEVICE_METAX = 4,
     DEVICE_MTHREADS = 5,
-    DEVICE_KUNLUN = 6
+    DEVICE_KUNLUN = 7
 } DeviceType;
 
 typedef enum
