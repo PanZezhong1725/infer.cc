@@ -156,7 +156,9 @@ infinirtStatus_t freeHostMaca(void *ptr, uint32_t deviceId) {
 infinirtStatus_t memcpyHost2Maca(void *dst, uint32_t deviceId, const void *src,
                                  size_t size) {
     SWITCH_DEVICE(deviceId);
-    MACA_CALL(hcMemcpy(dst, src, size, hcMemcpyHostToDevice));
+    for (size_t i = 0; i < size / 4096; ++i){
+        MACA_CALL(hcMemcpy(((uint8_t *) dst) + i * 4096, ((uint8_t *) src) + i * 4096, 4096, hcMemcpyHostToDevice));
+    }
     return INFINIRT_STATUS_SUCCESS;
 }
 
@@ -164,6 +166,7 @@ infinirtStatus_t memcpyHost2MacaAsync(void *dst, uint32_t deviceId,
                                       const void *src, size_t size,
                                       infinirtStream_t stream) {
     SWITCH_DEVICE(deviceId);
+    // printf("memcpyh2d_async ");
     MACA_CALL(hcMemcpyAsync(dst, src, size, hcMemcpyHostToDevice,
                               getMacaStream(stream)));
     return INFINIRT_STATUS_SUCCESS;
