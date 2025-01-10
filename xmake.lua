@@ -149,8 +149,6 @@ if has_config("kunlun-xpu") then
             add_includedirs(KUNLUN_HOME .. "/include")
             add_links("bkcl")
             add_files("src/ccl/kunlun/*.cc")
-            add_cxflags("-fopenmp")
-            add_ldflags("-fopenmp") 
         end 
         add_cxflags("-lstdc++ -Wall -Werror -fPIC")
 

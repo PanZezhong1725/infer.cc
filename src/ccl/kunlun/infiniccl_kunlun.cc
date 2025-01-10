@@ -1,7 +1,7 @@
 #include "infiniccl_kunlun.h"
 #include "../../runtime/runtime.h"
-#include <cstdio>
-#include <omp.h>
+#include <iostream>
+#include <pthread.h>
 #include <vector>
 #include <xpu/bkcl.h>
 #include <xpu/runtime.h>
@@ -11,8 +11,8 @@
     do {                                                                       \
         auto err = (x);                                                        \
         if (BKCL_SUCCESS != err) {                                             \
-            fprintf(stderr, "KUNLUN XCCL error in %s:%i.\n", __FILE__,         \
-                    __LINE__);                                                 \
+            std::cerr << "KUNLUN XCCL error in " << __FILE__ << ":"            \
+                      << __LINE__ << ".\n";                                    \
             return INFINICCL_STATUS_EXECUTION_FAILED;                          \
         }                                                                      \
     } while (0)
@@ -21,9 +21,9 @@
     do {                                                                       \
         auto err = xpu_set_device(deviceId);                                   \
         if (err != XPU_SUCCESS) {                                              \
-            fprintf(stderr, "KUNLUN Runtime error in %s:%i : %s.\n", __FILE__, \
-                    __LINE__, xpu_strerror(err));                              \
-            return INFINICCL_STATUS_BAD_DEVICE;                                 \
+            std::cerr << "KUNLUN Runtime error in " << __FILE__ << ":"         \
+                      << __LINE__ << " : " << xpu_strerror(err) << ".\n";      \
+            return INFINICCL_STATUS_BAD_DEVICE;                                \
         }                                                                      \
     } while (0)
 
@@ -49,49 +49,79 @@ inline BKCLContext_t getXcclComm(infinicclComm_t comm) {
     return static_cast<BKCLContext_t>(comm->comm);
 }
 
-BKCLResult_t bkclCommInitAllOmp(BKCLContext_t *ctx, int rank, int nranks,
-                                BKCLUniqueId &unique_id) {
-    if (nranks <= 0) {
-        return BKCL_INVALID_ARGUMENT;
+// Parameters for thread initialization
+struct InitRankParam {
+    int rank;
+    int nranks;
+    BKCLUniqueId id;
+    BKCLContext_t *ctx;
+    int *errorFlag; // Shared error flag
+};
+
+// Thread function for initializing BKCL context
+void *init_bkcl_context_func(void *args) {
+    auto *param = static_cast<InitRankParam *>(args);
+    xpu_set_device(param->rank);
+    int result =
+        bkcl_init_rank(param->ctx, param->rank, param->nranks, &param->id);
+
+    if (result != BKCL_SUCCESS) {
+        std::cerr << "rank " << param->rank
+                  << " init failed with error code: " << result << "\n";
+        *(param->errorFlag) = result;
     }
-    // rank 0 gen unique_id
-    if (rank == 0) {
-        BKCLResult_t result = bkcl_get_unique_id(&unique_id);
-        if (result != BKCL_SUCCESS) {
-            return result;
-        }
-#pragma omp flush(unique_id)
-    }
-    // wait all
-#pragma omp barrier
-    // every rank init ctx
-    return bkcl_init_rank(ctx, rank, nranks, &unique_id);
+    return nullptr;
 }
 
+// Interface function for BKCL communication initialization
 infinicclStatus_t infinicclKunlunCommInitAll(infinicclComm_t *comms,
-                                             uint32_t numDevices,
-                                             uint32_t const *deviceIDs) {
-    BKCLUniqueId unique_id;
-    std::vector<BKCLContext_t> xcclComms(numDevices);
-    BKCLResult_t thread_result = BKCL_SUCCESS;
+                                             unsigned int numDevices,
+                                             unsigned int const *deviceIDs) {
+    // Allocate memory for BKCL contexts
+    std::vector<BKCLContext_t> ctxs(numDevices);
 
-#pragma omp parallel num_threads(numDevices)
-    {
-        int rank = omp_get_thread_num();
-        BKCLResult_t result =
-            bkclCommInitAllOmp(&xcclComms[rank], rank, numDevices, unique_id);
-        if (result != BKCL_SUCCESS) {
-#pragma omp critical
-            thread_result = result;
-        }
+    // Generate BKCL unique ID
+    BKCLUniqueId id;
+    BKCLResult_t uniqueIdResult = bkcl_get_unique_id(&id);
+    if (uniqueIdResult != BKCL_SUCCESS) {
+        std::cerr << "Failed to get BKCL unique ID. Error code: "
+                  << uniqueIdResult << "\n";
+        return INFINICCL_STATUS_INVALID_ARGUMENT;
     }
-    if (thread_result != BKCL_SUCCESS) {
+
+    // Allocate threads and parameters
+    std::vector<pthread_t> tids(numDevices);
+    std::vector<InitRankParam> params(numDevices);
+    int globalError = BKCL_SUCCESS;
+
+    for (unsigned int i = 0; i < numDevices; i++) {
+        params[i].rank = i;
+        params[i].nranks = numDevices;
+        params[i].id = id;
+        params[i].ctx = &ctxs[i];
+        params[i].errorFlag = &globalError;
+
+        pthread_create(&tids[i], nullptr, init_bkcl_context_func,
+                       static_cast<void *>(&params[i]));
+    }
+
+    // Wait for all threads to complete
+    for (unsigned int i = 0; i < numDevices; i++) {
+        pthread_join(tids[i], nullptr);
+    }
+
+    // Check for errors during initialization
+    if (globalError != BKCL_SUCCESS) {
+        std::cerr << "BKCL context initialization failed.\n";
         return INFINICCL_STATUS_COMMUNICATOR_UNINITIALIZED;
     }
-    for (uint32_t i = 0; i < numDevices; i++) {
-        comms[i] =
-            new InfiniComm{DEVICE_KUNLUN, deviceIDs[i], (void *)(xcclComms[i])};
+
+    // Create InfiniComm instances for each device
+    for (unsigned int i = 0; i < numDevices; i++) {
+        comms[i] = new InfiniComm{DEVICE_KUNLUN, deviceIDs[i],
+                                  static_cast<void *>(ctxs[i])};
     }
+
     return INFINICCL_STATUS_SUCCESS;
 }
 
@@ -110,8 +140,11 @@ infinicclStatus_t infinicclKunlunAllReduceSum(infinicclComm_t comm,
         return INFINICCL_STATUS_BAD_DATATYPE;
     }
     SWITCH_DEVICE(comm->deviceID);
-    XCCL_CALL(bkcl_all_reduce(getXcclComm(comm), sendbuf, recvbuf, count,
-                              getKunlunDtype(datatype), BKCLOp::BKCL_ADD,
-                              getKunlunStream(stream)));
+    bkcl_all_reduce(getXcclComm(comm), sendbuf, recvbuf, count,
+                    getKunlunDtype(datatype), BKCLOp::BKCL_ADD,
+                    getKunlunStream(stream));
+    std::vector<float> out(count);
+    xpu_memcpy(out.data(), recvbuf, count * 4,
+               XPUMemcpyKind::XPU_DEVICE_TO_HOST);
     return INFINICCL_STATUS_SUCCESS;
 }

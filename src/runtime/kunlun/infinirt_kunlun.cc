@@ -1,14 +1,14 @@
 #include "infinirt_kunlun.h"
 #include "xpu/runtime.h"
 #include "xpu/runtime_ex.h"
-#include <cstdio>
+#include <iostream>
 
 #define KUNLUN_CALL(x)                                                         \
     do {                                                                       \
         auto err = (x);                                                        \
         if (err != XPU_SUCCESS) {                                              \
-            fprintf(stderr, "KUNLUN Runtime error in %s:%i : %s.\n", __FILE__, \
-                    __LINE__, xpu_strerror(err));                              \
+            std::cerr << "KUNLUN Runtime error in " << __FILE__ << ":" << __LINE__ \
+                      << " : " << xpu_strerror(err) << ".\n";                  \
             return INFINIRT_STATUS_EXECUTION_FAILED;                           \
         }                                                                      \
     } while (0)
@@ -17,8 +17,8 @@
     do {                                                                       \
         auto err = xpu_set_device(deviceId);                                   \
         if (err != XPU_SUCCESS) {                                              \
-            fprintf(stderr, "KUNLUN Runtime error in %s:%i : %s.\n", __FILE__, \
-                    __LINE__, xpu_strerror(err));                              \
+            std::cerr << "KUNLUN Runtime error in " << __FILE__ << ":" << __LINE__ \
+                      << " : " << xpu_strerror(err) << ".\n";                  \
             return INFINIRT_STATUS_BAD_DEVICE;                                 \
         }                                                                      \
     } while (0)
