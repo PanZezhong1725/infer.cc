@@ -2,7 +2,7 @@
 #define INFINICCL_CAMBRICON_H_
 #include "infiniccl.h"
 
-#ifdef ENABLE_CAMBRICON_MLU
+#if defined(ENABLE_CAMBRICON_MLU) && defined(ENABLE_CCL)
 #define IMPL_WITH_CAMBRICON ;
 #else
 #define IMPL_WITH_CAMBRICON { return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED; }
