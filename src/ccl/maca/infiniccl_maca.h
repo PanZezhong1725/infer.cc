@@ -2,7 +2,7 @@
 #define INFINICCL_MACA_H_
 #include "infiniccl.h"
 
-#ifdef ENABLE_METAX_GPU
+#if defined(ENABLE_METAX_GPU) && defined(ENABLE_CCL)
 #define IMPL_WITH_MACA ;
 #else
 #define IMPL_WITH_MACA { return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED; }

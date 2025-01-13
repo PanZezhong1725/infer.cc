@@ -2,7 +2,7 @@
 #define INFINICCL_ASCEND_H_
 #include "infiniccl.h"
 
-#ifdef ENABLE_ASCEND_NPU
+#if defined(ENABLE_ASCEND_NPU) && defined (ENABLE_CCL)
 #define IMPL_WITH_ASCEND ;
 #else
 #define IMPL_WITH_ASCEND { return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED; }
