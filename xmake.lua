@@ -29,6 +29,13 @@ option("ascend-npu")
     add_defines("ENABLE_ASCEND_NPU")
 option_end()
 
+option("kunlun-xpu")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Enable or disable Kunlun XPU kernel")
+    add_defines("ENABLE_KUNLUN_XPU")
+option_end()
+
 option("metax-gpu")
     set_default(false)
     set_showmenu(true)
@@ -129,6 +136,33 @@ if has_config("ascend-npu") then
     target_end()
 end
 
+if has_config("kunlun-xpu") then
+
+    add_defines("ENABLE_KUNLUN_XPU")
+    local KUNLUN_HOME = os.getenv("KUNLUN_HOME")
+
+    add_includedirs(KUNLUN_HOME .. "/include")
+    add_linkdirs(KUNLUN_HOME .. "/lib64")
+    add_links("xpurt")
+    add_links("xpuapi")
+    add_links("pthread")
+
+    target("kunlun-xpu")
+        set_kind("static")
+        set_languages("cxx17")
+        on_install(function (target) end)
+        -- Add include dirs
+        add_files("src/runtime/kunlun/*.cc")
+        if has_config("ccl") then
+            add_includedirs(KUNLUN_HOME .. "/include")
+            add_links("bkcl")
+            add_files("src/ccl/kunlun/*.cc")
+        end 
+        add_cxflags("-lstdc++ -Wall -Werror -fPIC")
+
+    target_end()
+end
+
 if has_config("cambricon-mlu") then
     add_defines("ENABLE_CAMBRICON_MLU")
     add_includedirs("/usr/local/neuware/include")
@@ -180,6 +214,10 @@ target("infinirt")
     if has_config("ascend-npu") then
         add_deps("ascend-npu")
     end
+    if has_config("kunlun-xpu") then
+        add_deps("kunlun-xpu")
+    end
+
     if has_config("cambricon-mlu") then
         add_deps("cambricon-mlu")
     end    
@@ -200,6 +238,9 @@ target("infiniccl")
     end
     if has_config("ascend-npu") then
         add_deps("ascend-npu")
+    end
+    if has_config("kunlun-xpu") then
+        add_deps("kunlun-xpu")
     end
     if has_config("cambricon-mlu") then
         add_deps("cambricon-mlu")
@@ -241,6 +282,9 @@ target("infini_infer_test")
     end
     if has_config("ascend-npu") then
         add_deps("ascend-npu")
+    end
+    if has_config("kunlun-xpu") then
+        add_deps("kunlun-xpu")
     end
     if has_config("cambricon-mlu") then
         add_deps("cambricon-mlu")

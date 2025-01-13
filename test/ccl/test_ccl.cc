@@ -55,6 +55,7 @@ int test_allreduce_sum(DeviceType deviceType) {
         deviceIds[i] = (uint32_t)i;
     }
 
+
     CHECK_RUN(infinicclCommInitAll(deviceType, comm, TEST_GROUP_SIZE, deviceIds.data()));
 
     for (int i = 0; i < TEST_GROUP_SIZE; i++) {
