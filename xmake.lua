@@ -29,6 +29,13 @@ option("ascend-npu")
     add_defines("ENABLE_ASCEND_NPU")
 option_end()
 
+option("kunlun-xpu")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Enable or disable Kunlun XPU kernel")
+    add_defines("ENABLE_KUNLUN_XPU")
+option_end()
+
 option("metax-gpu")
     set_default(false)
     set_showmenu(true)
@@ -81,6 +88,7 @@ if has_config("nv-gpu") then
         set_languages("cxx17")
         add_files("src/runtime/cuda/*.cc")
         if has_config("ccl") then
+            add_defines("ENABLE_CCL")
             -- Check if NCCL_ROOT is defined
             local nccl_root = os.getenv("NCCL_ROOT")
             if nccl_root then
@@ -120,10 +128,39 @@ if has_config("ascend-npu") then
         -- Add files
         add_files("src/runtime/ascend/*.cc")
         if has_config("ccl") then
+            add_defines("ENABLE_CCL")
             add_includedirs(ASCEND_HOME .. "/include/hccl")
             add_links("libhccl.so")
             add_files("src/ccl/ascend/*cc")
         end
+        add_cxflags("-lstdc++ -Wall -Werror -fPIC")
+
+    target_end()
+end
+
+if has_config("kunlun-xpu") then
+
+    add_defines("ENABLE_KUNLUN_XPU")
+    local KUNLUN_HOME = os.getenv("KUNLUN_HOME")
+
+    add_includedirs(KUNLUN_HOME .. "/include")
+    add_linkdirs(KUNLUN_HOME .. "/lib64")
+    add_links("xpurt")
+    add_links("xpuapi")
+    add_links("pthread")
+
+    target("kunlun-xpu")
+        set_kind("static")
+        set_languages("cxx17")
+        on_install(function (target) end)
+        -- Add include dirs
+        add_files("src/runtime/kunlun/*.cc")
+        if has_config("ccl") then
+            add_defines("ENABLE_CCL")
+            add_includedirs(KUNLUN_HOME .. "/include")
+            add_links("bkcl")
+            add_files("src/ccl/kunlun/*.cc")
+        end 
         add_cxflags("-lstdc++ -Wall -Werror -fPIC")
 
     target_end()
@@ -143,6 +180,7 @@ if has_config("cambricon-mlu") then
         set_languages("cxx17")
         add_files("src/runtime/cambricon/*.cc")
         if has_config("ccl") then
+            add_defines("ENABLE_CCL")
             add_links("libcncl.so")
             add_files("src/ccl/cambricon/*cc")
         end
@@ -165,6 +203,7 @@ if has_config("metax-gpu") then
 
         add_files("src/runtime/maca/*.cc")
         if has_config("ccl") then
+            add_defines("ENABLE_CCL")
             add_links("libhccl.so")
             add_files("src/ccl/maca/*.cc")
         end
@@ -180,6 +219,10 @@ target("infinirt")
     if has_config("ascend-npu") then
         add_deps("ascend-npu")
     end
+    if has_config("kunlun-xpu") then
+        add_deps("kunlun-xpu")
+    end
+
     if has_config("cambricon-mlu") then
         add_deps("cambricon-mlu")
     end    
@@ -200,6 +243,9 @@ target("infiniccl")
     end
     if has_config("ascend-npu") then
         add_deps("ascend-npu")
+    end
+    if has_config("kunlun-xpu") then
+        add_deps("kunlun-xpu")
     end
     if has_config("cambricon-mlu") then
         add_deps("cambricon-mlu")
@@ -242,6 +288,9 @@ target("infini_infer_test")
     if has_config("ascend-npu") then
         add_deps("ascend-npu")
     end
+    if has_config("kunlun-xpu") then
+        add_deps("kunlun-xpu")
+    end
     if has_config("cambricon-mlu") then
         add_deps("cambricon-mlu")
     end
@@ -254,6 +303,7 @@ target("infini_infer_test")
     add_files("test/tensor/*.cc")
     add_files("src/runtime/runtime.cc")
     if has_config("ccl") then
+        add_defines("ENABLE_CCL") 
         add_files("src/ccl/infiniccl.cc")
         add_files("test/ccl/*.cc")
     end

@@ -1,13 +1,15 @@
 #include "infiniccl.h"
 #include "../runtime/runtime.h"
 #include "./ascend/infiniccl_ascend.h"
-#include "./cuda/infiniccl_cuda.h"
 #include "./cambricon/infiniccl_cambricon.h"
+#include "./cuda/infiniccl_cuda.h"
+#include "./kunlun/infiniccl_kunlun.h"
 #include "./maca/infiniccl_maca.h"
 
 __C infinicclStatus_t infinicclCommInitAll(DeviceType deviceType,
                                            infinicclComm_t *comms,
-                                           unsigned numDevices, unsigned const *deviceIDs) {
+                                           unsigned numDevices,
+                                           unsigned const *deviceIDs) {
     switch (deviceType) {
     case DEVICE_NVIDIA:
         return infinicclCudaCommInitAll(comms, numDevices, deviceIDs);
@@ -15,6 +17,8 @@ __C infinicclStatus_t infinicclCommInitAll(DeviceType deviceType,
         return infinicclCambriconCommInitAll(comms, numDevices, deviceIDs);
     case DEVICE_ASCEND:
         return infinicclAscendCommInitAll(comms, numDevices, deviceIDs);
+    case DEVICE_KUNLUN:
+        return infinicclKunlunCommInitAll(comms, numDevices, deviceIDs);
     case DEVICE_METAX:
         return infinicclMacaCommInitAll(comms, numDevices, deviceIDs);
     default:
@@ -33,6 +37,8 @@ __C infinicclStatus_t infinicclCommDestroy(infinicclComm_t comm) {
         return infinicclCambriconCommDestroy(comm);
     case DEVICE_ASCEND:
         return infinicclAscendCommDestroy(comm);
+    case DEVICE_KUNLUN:
+        return infinicclKunlunCommDestroy(comm);
     case DEVICE_METAX:
         return infinicclMacaCommDestroy(comm);
     default:
@@ -56,13 +62,16 @@ __C infinicclStatus_t infinicclAllReduceSum(infinicclComm_t comm, void *sendbuf,
                                          datatype, stream);
     case DEVICE_CAMBRICON:
         return infinicclCambriconAllReduceSum(comm, sendbuf, recvbuf, count,
-                                           datatype, stream);
+                                              datatype, stream);
     case DEVICE_ASCEND:
         return infinicclAscendAllReduceSum(comm, sendbuf, recvbuf, count,
                                            datatype, stream);
+    case DEVICE_KUNLUN:
+        return infinicclKunlunAllReduceSum(comm, sendbuf, recvbuf, count,
+                                           datatype, stream);
     case DEVICE_METAX:
         return infinicclMacaAllReduceSum(comm, sendbuf, recvbuf, count,
-                                           datatype, stream);
+                                         datatype, stream);
     default:
         return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED;
     }
