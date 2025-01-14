@@ -19,11 +19,15 @@ infinirtStatus_t recordKunlunEvent(infinirtEvent_t event, infinirtStream_t strea
 infinirtStatus_t synchronizeKunlunEvent(infinirtEvent_t event) IMPL_WITH_KUNLUN
 
 infinirtStatus_t mallocKunlun(void **pMemory, uint32_t deviceId, size_t size) IMPL_WITH_KUNLUN
+infinirtStatus_t mallocKunlunAsync(void **pMemory, uint32_t deviceId, size_t size, infinirtStream_t stream) IMPL_WITH_KUNLUN
 infinirtStatus_t mallocHostKunlun(void **pMemory, uint32_t deviceId, size_t size) IMPL_WITH_KUNLUN
 infinirtStatus_t freeKunlun(void *ptr, uint32_t deviceId) IMPL_WITH_KUNLUN
+infinirtStatus_t freeKunlunAsync(void *ptr, uint32_t deviceId, infinirtStream_t stream) IMPL_WITH_KUNLUN
 infinirtStatus_t freeHostKunlun(void *ptr, uint32_t deviceId) IMPL_WITH_KUNLUN
 infinirtStatus_t memcpyHost2Kunlun(void *dst, uint32_t deviceId, const void *src, size_t size) IMPL_WITH_KUNLUN
+infinirtStatus_t memcpyHost2KunlunAsync(void *dst, uint32_t deviceId, const void *src, size_t size, infinirtStream_t stream) IMPL_WITH_KUNLUN
 infinirtStatus_t memcpyKunlun2Host(void *dst, const void *src, uint32_t deviceId, size_t size) IMPL_WITH_KUNLUN
 infinirtStatus_t memcpyKunlun(void *dst, const void *src, uint32_t deviceId, size_t size) IMPL_WITH_KUNLUN
+infinirtStatus_t memcpyKunlunAsync(void *dst, const void *src, uint32_t deviceId, size_t size, infinirtStream_t stream) IMPL_WITH_KUNLUN
 
 #endif

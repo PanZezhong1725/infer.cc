@@ -324,7 +324,7 @@ __C infinirtStatus_t infinirtMallocAsync(void **pMemory, DeviceType device,
     case DEVICE_ASCEND:
         return mallocAscendAsync(pMemory, deviceId, size, stream);
     case DEVICE_KUNLUN:
-        return mallocKunlun(pMemory, deviceId, size);
+        return mallocKunlunAsync(pMemory, deviceId, size, stream);
     case DEVICE_METAX:
         return mallocMacaAsync(pMemory, deviceId, size, stream);
     default:
@@ -397,7 +397,7 @@ __C infinirtStatus_t infinirtFreeAsync(void *ptr, DeviceType device,
     case DEVICE_ASCEND:
         return freeAscendAsync(ptr, deviceId, stream);
     case DEVICE_KUNLUN:
-        return freeKunlun(ptr, deviceId);
+        return freeKunlunAsync(ptr, deviceId, stream);
     case DEVICE_METAX:
         return freeMacaAsync(ptr, deviceId, stream);
     default:
@@ -472,7 +472,7 @@ __C infinirtStatus_t infinirtMemcpyH2DAsync(void *dst, DeviceType device,
     case DEVICE_ASCEND:
         return memcpyHost2AscendAsync(dst, deviceId, src, size, stream);
     case DEVICE_KUNLUN:
-        return memcpyHost2Kunlun(dst, deviceId, src, size);
+        return memcpyHost2KunlunAsync(dst, deviceId, src, size, stream);
     case DEVICE_METAX:
         return memcpyHost2MacaAsync(dst, deviceId, src, size, stream);
     default:
@@ -554,7 +554,7 @@ __C __export infinirtStatus_t infinirtMemcpyAsync(void *dst, const void *src,
     case DEVICE_ASCEND:
         return memcpyAscendAsync(dst, src, deviceId, size, stream);
     case DEVICE_KUNLUN:
-        return memcpyKunlun(dst, src, deviceId, size);
+        return memcpyKunlunAsync(dst, src, deviceId, size, stream);
     case DEVICE_METAX:
         return memcpyMacaAsync(dst, src, deviceId, size, stream);
     default:

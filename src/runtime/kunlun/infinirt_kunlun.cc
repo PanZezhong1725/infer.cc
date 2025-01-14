@@ -7,8 +7,8 @@
     do {                                                                       \
         auto err = (x);                                                        \
         if (err != XPU_SUCCESS) {                                              \
-            std::cerr << "KUNLUN Runtime error in " << __FILE__ << ":" << __LINE__ \
-                      << " : " << xpu_strerror(err) << ".\n";                  \
+            std::cerr << "KUNLUN Runtime error in " << __FILE__ << ":"         \
+                      << __LINE__ << " : " << xpu_strerror(err) << ".\n";      \
             return INFINIRT_STATUS_EXECUTION_FAILED;                           \
         }                                                                      \
     } while (0)
@@ -17,8 +17,8 @@
     do {                                                                       \
         auto err = xpu_set_device(deviceId);                                   \
         if (err != XPU_SUCCESS) {                                              \
-            std::cerr << "KUNLUN Runtime error in " << __FILE__ << ":" << __LINE__ \
-                      << " : " << xpu_strerror(err) << ".\n";                  \
+            std::cerr << "KUNLUN Runtime error in " << __FILE__ << ":"         \
+                      << __LINE__ << " : " << xpu_strerror(err) << ".\n";      \
             return INFINIRT_STATUS_BAD_DEVICE;                                 \
         }                                                                      \
     } while (0)
@@ -105,7 +105,23 @@ infinirtStatus_t mallocKunlun(void **pMemory, uint32_t deviceId, size_t size) {
     return INFINIRT_STATUS_SUCCESS;
 }
 
+infinirtStatus_t mallocKunlunAsync(void **pMemory, uint32_t deviceId,
+                                   size_t size, infinirtStream_t stream) {
+    SWITCH_DEVICE(deviceId);
+    void *kunlun_ptr;
+    KUNLUN_CALL(xpu_malloc(&kunlun_ptr, size));
+    *pMemory = kunlun_ptr;
+    return INFINIRT_STATUS_SUCCESS;
+}
+
 infinirtStatus_t freeKunlun(void *ptr, uint32_t deviceId) {
+    SWITCH_DEVICE(deviceId);
+    KUNLUN_CALL(xpu_free(ptr));
+    return INFINIRT_STATUS_SUCCESS;
+}
+
+infinirtStatus_t freeKunlunAsync(void *ptr, uint32_t deviceId,
+                                 infinirtStream_t stream) {
     SWITCH_DEVICE(deviceId);
     KUNLUN_CALL(xpu_free(ptr));
     return INFINIRT_STATUS_SUCCESS;
@@ -133,6 +149,14 @@ infinirtStatus_t memcpyHost2Kunlun(void *dst, uint32_t deviceId,
     return INFINIRT_STATUS_SUCCESS;
 }
 
+infinirtStatus_t memcpyHost2KunlunAsync(void *dst, uint32_t deviceId,
+                                        const void *src, size_t size,
+                                        infinirtStream_t stream) {
+    SWITCH_DEVICE(deviceId);
+    KUNLUN_CALL(xpu_memcpy(dst, src, size, XPUMemcpyKind::XPU_HOST_TO_DEVICE));
+    return INFINIRT_STATUS_SUCCESS;
+}
+
 infinirtStatus_t memcpyKunlun2Host(void *dst, const void *src,
                                    uint32_t deviceId, size_t size) {
     SWITCH_DEVICE(deviceId);
@@ -142,6 +166,15 @@ infinirtStatus_t memcpyKunlun2Host(void *dst, const void *src,
 
 infinirtStatus_t memcpyKunlun(void *dst, const void *src, uint32_t deviceId,
                               size_t size) {
+    SWITCH_DEVICE(deviceId);
+    KUNLUN_CALL(
+        xpu_memcpy(dst, src, size, XPUMemcpyKind::XPU_DEVICE_TO_DEVICE));
+    return INFINIRT_STATUS_SUCCESS;
+}
+
+infinirtStatus_t memcpyKunlunAsync(void *dst, const void *src,
+                                   uint32_t deviceId, size_t size,
+                                   infinirtStream_t stream) {
     SWITCH_DEVICE(deviceId);
     KUNLUN_CALL(
         xpu_memcpy(dst, src, size, XPUMemcpyKind::XPU_DEVICE_TO_DEVICE));
