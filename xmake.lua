@@ -88,6 +88,7 @@ if has_config("nv-gpu") then
         set_languages("cxx17")
         add_files("src/runtime/cuda/*.cc")
         if has_config("ccl") then
+            add_defines("ENABLE_CCL")
             -- Check if NCCL_ROOT is defined
             local nccl_root = os.getenv("NCCL_ROOT")
             if nccl_root then
@@ -127,6 +128,7 @@ if has_config("ascend-npu") then
         -- Add files
         add_files("src/runtime/ascend/*.cc")
         if has_config("ccl") then
+            add_defines("ENABLE_CCL")
             add_includedirs(ASCEND_HOME .. "/include/hccl")
             add_links("libhccl.so")
             add_files("src/ccl/ascend/*cc")
@@ -154,6 +156,7 @@ if has_config("kunlun-xpu") then
         -- Add include dirs
         add_files("src/runtime/kunlun/*.cc")
         if has_config("ccl") then
+            add_defines("ENABLE_CCL")
             add_includedirs(KUNLUN_HOME .. "/include")
             add_links("bkcl")
             add_files("src/ccl/kunlun/*.cc")
@@ -177,6 +180,7 @@ if has_config("cambricon-mlu") then
         set_languages("cxx17")
         add_files("src/runtime/cambricon/*.cc")
         if has_config("ccl") then
+            add_defines("ENABLE_CCL")
             add_links("libcncl.so")
             add_files("src/ccl/cambricon/*cc")
         end
@@ -199,6 +203,7 @@ if has_config("metax-gpu") then
 
         add_files("src/runtime/maca/*.cc")
         if has_config("ccl") then
+            add_defines("ENABLE_CCL")
             add_links("libhccl.so")
             add_files("src/ccl/maca/*.cc")
         end
@@ -298,6 +303,7 @@ target("infini_infer_test")
     add_files("test/tensor/*.cc")
     add_files("src/runtime/runtime.cc")
     if has_config("ccl") then
+        add_defines("ENABLE_CCL") 
         add_files("src/ccl/infiniccl.cc")
         add_files("test/ccl/*.cc")
     end

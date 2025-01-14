@@ -2,7 +2,7 @@
 #define __INFINICCL_KUNLUN_H__
 #include "infiniccl.h"
 
-#ifdef ENABLE_KUNLUN_XPU
+#if defined(ENABLE_KUNLUN_XPU) && defined(ENABLE_CCL)
 #define IMPL_WITH_KUNLUN ;
 #else
 #define IMPL_WITH_KUNLUN {return INFINICCL_STATUS_DEVICE_NOT_SUPPORTED; }

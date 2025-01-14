@@ -17,8 +17,10 @@ int main() {
 #ifdef ENABLE_KUNLUN_XPU
     printf("Test tensor fuctions: Kunlun\n");
     test_tensor(DEVICE_KUNLUN);
-    printf("Test CCL functions: Kunlun\n");
-    test_ccl(DEVICE_KUNLUN);
+    #ifdef ENABLE_CCL
+        printf("Test CCL functions: Kunlun\n");
+        test_ccl(DEVICE_KUNLUN);
+    #endif
 #endif
 
 #ifdef ENABLE_CAMBRICON_MLU
