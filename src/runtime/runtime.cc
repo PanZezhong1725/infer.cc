@@ -430,6 +430,8 @@ __C __export infinirtStatus_t infinirtFreeHost(void *ptr, DeviceType device,
 __C infinirtStatus_t infinirtMemcpyH2D(void *dst, DeviceType device,
                                             uint32_t deviceId, const void *src,
                                             size_t size) {
+    if (size == 0)
+        return INFINIRT_STATUS_SUCCESS;
     if (dst == nullptr || src == nullptr)
         return INFINIRT_STATUS_INVALID_ARGUMENT;
 
@@ -456,6 +458,8 @@ __C infinirtStatus_t infinirtMemcpyH2DAsync(void *dst, DeviceType device,
                                             uint32_t deviceId, const void *src,
                                             size_t size,
                                             infinirtStream_t stream) {
+    if (size == 0)
+        return INFINIRT_STATUS_SUCCESS;
     if (dst == nullptr || src == nullptr)
         return INFINIRT_STATUS_INVALID_ARGUMENT;
     if (stream != nullptr &&
@@ -483,6 +487,8 @@ __C infinirtStatus_t infinirtMemcpyH2DAsync(void *dst, DeviceType device,
 __C infinirtStatus_t infinirtMemcpyD2H(void *dst, const void *src,
                                        DeviceType device, uint32_t deviceId,
                                        size_t size) {
+    if (size == 0)
+        return INFINIRT_STATUS_SUCCESS;
     if (src == nullptr || dst == nullptr)
         return INFINIRT_STATUS_INVALID_ARGUMENT;
 
