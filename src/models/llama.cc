@@ -320,7 +320,6 @@ void infer_device(LlamaMeta const &meta, DeviceResource const &rsrc,
     // Allocate workspace
     RUN_INFINI(infinirtMallocAsync(&workspace, device, device_id,
                                    workspace_size, stream_compute));
-
     for (unsigned int layer = 0; layer < nlayer; layer++) {
         // 1. Attention
         // rms norm

@@ -43,6 +43,13 @@ option("metax-gpu")
     add_defines("ENABLE_METAX_GPU")
 option_end()
 
+option("mthreads-gpu")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Enable or disable Mthreads GPU functions")
+    add_defines("ENABLE_MTHREADS_GPU")
+option_end()
+
 option("ccl")
     set_default(true)
     set_showmenu(true)
@@ -211,6 +218,29 @@ if has_config("metax-gpu") then
     target_end()
 end
 
+if has_config("mthreads-gpu") then
+    add_defines("ENABLE_MTHREADS_GPU")
+    local MACA_ROOT = os.getenv("MUSA_INSTALL_PATH") or os.getenv("MACA_HOME") or os.getenv("MACA_ROOT") or os.getenv("MUSA_PATH")
+
+    add_includedirs(MACA_ROOT .. "/include")
+    add_linkdirs(MACA_ROOT .. "/lib")
+    add_links("libmusart.so")
+
+    target("mthreads-gpu")
+        set_kind("static")
+        set_languages("cxx17")
+        on_install(function (target) end)
+
+        add_files("src/runtime/musa/*.cc")
+        if has_config("ccl") then
+            add_defines("ENABLE_CCL")
+            add_links("libmccl.so")
+            add_files("src/ccl/musa/*.cc")
+        end
+        add_cxflags("-lstdc++ -Wall -Werror -fPIC")
+    target_end()
+end
+
 target("infinirt")
     set_kind("shared")
     if has_config("nv-gpu") then
@@ -228,6 +258,9 @@ target("infinirt")
     end    
     if has_config("metax-gpu") then
         add_deps("metax-gpu")
+    end
+    if has_config("mthreads-gpu") then
+        add_deps("mthreads-gpu")
     end
     set_languages("cxx17")
     add_files("src/runtime/runtime.cc")
@@ -252,6 +285,9 @@ target("infiniccl")
     end
     if has_config("metax-gpu") then
         add_deps("metax-gpu")
+    end
+    if has_config("mthreads-gpu") then
+        add_deps("mthreads-gpu")
     end
     set_languages("cxx17")
     add_files("src/ccl/infiniccl.cc")
@@ -296,6 +332,9 @@ target("infini_infer_test")
     end
     if has_config("metax-gpu") then
         add_deps("metax-gpu")
+    end
+    if has_config("mthreads-gpu") then
+        add_deps("mthreads-gpu")
     end
     add_cxflags("-g", "-O0")
     add_ldflags("-g")
