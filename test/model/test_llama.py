@@ -208,7 +208,7 @@ class LlamaModel():
 
 def test():
     if len(sys.argv) < 3:
-        print("Usage: python test_llama.py [--cpu | --cuda | --cambricon | --ascend | --maca] <path/to/model_dir> [n_device]")
+        print("Usage: python test_llama.py [--cpu | --cuda | --cambricon | --ascend | --maca | --mthreads] <path/to/model_dir> [n_device]")
         sys.exit(1)
     model_path =  sys.argv[2]
     device_type = DeviceType.DEVICE_TYPE_CPU
@@ -222,8 +222,10 @@ def test():
         device_type = DeviceType.DEVICE_TYPE_ASCEND
     elif sys.argv[1] == "--maca":
         device_type = DeviceType.DEVICE_TYPE_METAX
+    elif sys.argv[1] == "--musa":
+        device_type = DeviceType.DEVICE_TYPE_MTHREADS
     else:
-        print("Usage: python test_llama.py [--cpu | --cuda | --cambricon | --ascend | --maca] <path/to/model_dir> [n_device]")
+        print("Usage: python test_llama.py [--cpu | --cuda | --cambricon | --ascend | --maca | --mthreads] <path/to/model_dir> [n_device]")
         sys.exit(1)
     
     ndev = int(sys.argv[3]) if len(sys.argv) > 3 else 1
